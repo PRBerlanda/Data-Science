@@ -1,87 +1,100 @@
-# Data Science Toolkit – Paulo Berlanda
+# 11 · Neural Networks (MLP) for Tabular Data
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that predicts a class or a value with a **multilayer perceptron**, a neural network made of dense layers. It searches the architecture by cross-validation with early stopping, compares the network with a linear reference model, evaluates it on a test set, shows the learning curve and saves the trained model. It runs with scikit-learn by default, or with TensorFlow/Keras.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+A multilayer perceptron passes the input variables through one or more **hidden layers** of neurons. Each neuron computes a weighted sum of its inputs and applies a non-linear activation (ReLU). Stacking layers lets the network learn complex, non-linear relationships. The weights are learned by gradient descent, minimizing a loss function (cross-entropy for classification, squared error for regression).
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+Because neural networks can easily overfit small tables, the tool always benchmarks the network against a **linear reference** (logistic or linear regression) and uses **early stopping** and **L2 regularization**.
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+## When to use it
 
----
+- Tabular prediction problems with enough data and potentially non-linear relationships.
+- As a contender alongside tree ensembles ([10](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles)) when you want to see whether a neural network adds value.
 
-## 🧭 Which tool should I use?
+**Use another model when** the data is small or you need interpretable coefficients ([04](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression)–[06](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression)), or when the data is a sequence over time ([12 · LSTM](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series)).
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+## How it works
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+1. **Load the data** and detect classification vs. regression (or set it). Columns that look like identifiers are removed.
+2. **Train/test split** (stratified for classification).
+3. **Preprocessing inside a pipeline**: imputation, **standardization** (networks are sensitive to scale) and one-hot encoding, fitted only on the training data.
+4. **Linear reference** scored by cross-validation.
+5. **Architecture search** with randomized cross-validation over:
+   - hidden layer sizes (e.g. `(16,)`, `(32, 16)`);
+   - L2 regularization strength;
+   - learning rate;
+   with early stopping on a validation slice.
+6. **Comparison** of the network with the linear reference, and **evaluation on the test set**.
+7. **Learning curve** (loss per epoch) and **permutation importance** on the test set.
+8. **Save** the model and, optionally, predict new data.
 
----
+## Inputs
 
-## ⚙️ Common features
+**Data:** one row per case with the target and the explanatory variables.
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+**Configuration** (the `CONFIGURATION` cell):
 
-## 🚀 Getting started
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `TARGET`, `X_VARIABLES`, `ID_COLUMN`, `IGNORE_COLUMNS` | Target, explanatory variables and columns to exclude. |
+| `PROBLEM_TYPE`, `POSITIVE_CLASS` | `"auto"`, `"classification"` or `"regression"`, and the class of interest in binary problems. |
+| `ENGINE` | `"sklearn"` (no TensorFlow needed) or `"keras"`. |
+| `ARCHITECTURES` | Candidate hidden-layer structures, each a tuple of neurons per layer. |
+| `L2_REGULARIZATION`, `LEARNING_RATES` | Candidate values for the search. |
+| `N_SEARCH_ITER`, `FOLDS` | Number of combinations tested and cross-validation folds. |
+| `MAX_EPOCHS`, `PATIENCE` | Training length and epochs without improvement before early stopping. |
+| `TEST_PROPORTION`, `METRIC`, `SEED` | Test share, selection metric and seed. |
+| `PREDICT_FILE` | Optional file with new cases to predict. |
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Data summary, reference vs. network comparison, best architecture, test metrics, epochs, importances and interpretation. |
+| `architecture_search.csv` | Every combination tested with its cross-validated scores. |
+| `permutation_importance.csv` | Loss in the metric when each variable is shuffled. |
+| `final_model.joblib` | Trained pipeline (scikit-learn engine). |
+| `keras_network.keras` + `preprocessor.joblib` | Trained network and preprocessing (Keras engine). |
+| `new_data_predictions.csv` | Predictions for `PREDICT_FILE`. |
+| `01_observed_predicted.png` / `01_confusion_matrix.png`, `02_learning_curve.png` | Charts. |
+
+## How to read the results
+
+- **Gain over the reference**: if the network does not beat the linear model, prefer the linear model. It is simpler, faster and easier to explain.
+- **Cross-validated score ± standard deviation**: expected performance and stability. **Training score much better than validation** means overfitting.
+- **Best architecture**: more neurons and layers add capacity but also risk of overfitting. Higher L2 means stronger regularization.
+- **Learning curve**: training loss should go down and level off. If the validation loss rises while the training loss keeps falling, the network is overfitting: increase regularization or shrink the network.
+- **Epochs trained**: early stopping halts training when the validation score stops improving.
+- **Test metrics**: accuracy, macro F1 and AUC (classification) or RMSE, MAE and R² (regression) on data never used in training.
+- **Permutation importance**: which variables the network relies on most (not causality).
+- Neural networks shine with large datasets. On small tables, linear models or tree ensembles often tie or win.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
+# optional, only for ENGINE = "keras":
+pip install tensorflow
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `neural_networks_tabular.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE`, `TARGET` and `PROBLEM_TYPE`).
+3. Run the script in Spyder (F5) or with `python neural_networks_tabular.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`winequality-red.csv` is the UCI red wine quality dataset: eleven physicochemical measurements (acidity, residual sugar, chlorides, sulfur dioxide, density, pH, sulphates, alcohol…) and the sensory quality score (`quality`, the target), modeled as a regression in the default configuration.
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the Deep Learning course (Classes 1–3) and the Keras Titanic script of "Trees, Networks and Ensembles" (MBA in Data Science and Analytics, USP/Esalq).
