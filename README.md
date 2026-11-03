@@ -1,87 +1,94 @@
-# Data Science Toolkit – Paulo Berlanda
+# 05 · Binary Logistic Regression
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that estimates the **probability of an event** (a target with two categories) and classifies cases. It handles the event coding, dummies, stepwise selection, odds ratios with confidence intervals, cutoff choice, confusion matrix, ROC/AUC, cross-validation and scoring of new data.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+Logistic regression models the log-odds of the event as a linear function of the explanatory variables:
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+`ln( p / (1 − p) ) = β0 + β1·X1 + β2·X2 + …`
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+and turns it back into a probability between 0 and 1. It is estimated by maximum likelihood. Exponentiated coefficients are **odds ratios**, which say how the odds of the event change for each variable.
 
----
+## When to use it
 
-## 🧭 Which tool should I use?
+- The target has **two outcomes**: churn yes/no, default, loyalty, fraud, purchase, failure, approval…
+- You want both a **probability** for each case and an **interpretable** effect for each factor.
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+**Use another model when** Y has 3+ unordered classes ([06](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression)) or when you only care about predictive accuracy and can give up interpretability ([10](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles), [11](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular)).
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+## How it works
 
----
+1. **Encode Y**: the category set in `EVENT` becomes 1 and the other becomes 0 (automatic: 1 if Y is already 0/1, otherwise the least frequent category).
+2. **Build X** with dummies (n − 1) for categorical variables. Ordinal ratings can be forced to be categorical.
+3. **Fit the logit by maximum likelihood**, then apply **backward stepwise** until all variables are significant.
+4. **Overall significance**: likelihood-ratio chi-square, McFadden pseudo-R², AIC and BIC.
+5. **Coefficients, Wald z, odds ratios** and 95% CIs.
+6. **Cutoff**: sensitivity and specificity are computed for every cutoff from 0.01 to 0.99. The default is the **Youden maximum** (sensitivity + specificity − 1), or you can fix a value.
+7. **Confusion matrix, ROC curve, AUC and Gini.**
+8. **Stratified cross-validation** of the AUC.
+9. **Scoring of new data** (probability and class) if a file is provided.
 
-## ⚙️ Common features
+## Inputs
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+**Data:** one row per case, a two-category target and the explanatory variables.
 
-## 🚀 Getting started
+**Configuration** (the `CONFIGURATION` cell):
+
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `TARGET`, `EVENT` | Target column and the category that counts as the event (or `"auto"`). |
+| `X_VARIABLES`, `ID_COLUMN`, `IGNORE_COLUMNS` | Explanatory variables and columns to exclude. |
+| `CATEGORICAL_VARIABLES` | `"auto"` (text/boolean) or a list, e.g. 1–5 ratings to be treated as categories. |
+| `STEPWISE`, `P_VALUE_THRESHOLD` | Stepwise selection and its threshold. |
+| `CUTOFF` | Fixed probability (e.g. 0.5) or `"auto"` (Youden). |
+| `CROSS_VALIDATION`, `SEED` | Folds for out-of-sample AUC and random seed. |
+| `PREDICT_FILE` | Optional file with new cases to score. |
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Event coding, stepwise steps, model fit, odds ratios, classification metrics, ROC and interpretation. |
+| `coefficients_odds_ratios.csv` | Coefficient, Wald z, p-value, CI and odds ratio with CI. |
+| `statsmodels_summary.txt` | Full statsmodels summary. |
+| `metrics_by_cutoff.csv` | Sensitivity, specificity, accuracy and Youden index for every cutoff. |
+| `data_with_probabilities.csv` | Original data plus event flag, predicted probability and classification. |
+| `new_data_predictions.csv` | Probability and class for `PREDICT_FILE`. |
+| `01_sensitivity_specificity.png`, `02_roc_curve.png` | Cutoff chart and ROC curve. |
+
+## How to read the results
+
+- **Likelihood-ratio chi-square p < 0.05**: the model is better than having no explanatory variables.
+- **McFadden pseudo-R²**: a relative fit measure. It is not comparable to the R² of linear regression, and values between 0.2 and 0.4 already indicate a good fit.
+- **Odds ratio (OR)**: OR > 1 increases the odds of the event, OR < 1 decreases them. For example, OR = 1.8 means 80% higher odds for +1 unit of X (or for that category vs. the reference), holding the rest constant. If the CI includes 1, the effect is not significant.
+- **Sensitivity**: share of real events the model catches. **Specificity**: share of non-events correctly identified. **Accuracy**: overall hit rate.
+- **Cutoff** is a business decision. Lower it to catch more events when missing one is costly (fraud, disease). Raise it when false alarms are costly.
+- **AUC** (independent of the cutoff): 0.5 = random, 0.7–0.8 acceptable, 0.8–0.9 good, > 0.9 excellent. **Gini** = 2·AUC − 1.
+- **Cross-validated AUC much lower than the fit AUC** means overfitting.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `binary_logistic_regression.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE`, `TARGET` and `EVENT`).
+3. Run the script in Spyder (F5) or with `python binary_logistic_regression.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`dados_fidelidade.csv` is a retail customer survey: an ID, the loyalty outcome (`fidelidade`: `sim` = yes, `nao` = no), sex, age and 1–5 ratings for service (`atendimento`), product range (`sortimento`), accessibility (`acessibilidade`) and price (`preço`). The ratings are treated as categories in the default configuration.
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the "2 - Binary and Multinomial Logistic Models" course script by Prof. Dr. Luiz Paulo Fávero (MBA in Data Science and Analytics, USP/Esalq). Theory: Fávero & Belfiore, *Manual de Análise de Dados*, Ch. 13.
