@@ -1,87 +1,100 @@
-# Data Science Toolkit – Paulo Berlanda
+# 14 · Web Scraping
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that turns **web pages into tables** (CSV and Excel) without rewriting code. It captures HTML tables directly, or extracts fields from "card" layouts (products, news, listings) using CSS selectors, and walks through several pages while following good scraping practices.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this tool does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+Web scraping downloads the HTML of a page and extracts the parts you need. The tool has two modes:
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+| Mode | Use it when | How it works |
+|---|---|---|
+| `"tables"` | The data is in `<table>` elements. | Every table on the page is read with `pandas.read_html`. |
+| `"selectors"` | The data is in repeated blocks ("cards"). | You give the CSS selector of one item and of each field inside it. Each item becomes one row. |
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+It can visit a fixed list of URLs, a URL template with a page number, or follow the "next page" link.
 
----
+**Built-in good practices:** respects `robots.txt`, waits between requests, identifies itself with a User-Agent, retries temporary failures (429/5xx) with increasing waits, and converts numbers stored as text (currency, thousand separators, units).
 
-## 🧭 Which tool should I use?
+> Use it only on sites whose terms allow scraping, never collect sensitive personal data, and keep a polite pace so you do not overload the server.
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+## When to use it
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+- Collecting public tables (statistics, rankings, price lists) for analysis.
+- Building a dataset from listing pages (products, quotes, job posts, news headlines).
+- Re-running the same collection periodically without touching the code.
 
----
+**Prefer an API** when the site offers one: it is more stable and usually allowed explicitly. Pages that render content only with JavaScript need a browser-automation tool instead.
 
-## ⚙️ Common features
+## How it works
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+1. **Build the page queue** from `URLS`, or from `URL_TEMPLATE` + `PAGES`.
+2. For each page:
+   - check `robots.txt`;
+   - download with retries (local HTML files are also accepted, which is useful for testing);
+   - extract items (selectors mode) or tables (tables mode);
+   - optionally follow the "next page" link;
+   - wait before the next request.
+3. **Clean and save**: warn about selectors that matched nothing, convert numeric text, and save every table as CSV plus an Excel workbook.
 
-## 🚀 Getting started
+## Inputs
+
+There is no input dataset: the input is the list of pages and the extraction rules.
+
+**Configuration** (the `CONFIGURATION` cell):
+
+| Parameter | What it controls |
+|---|---|
+| `MODE` | `"selectors"` or `"tables"`. |
+| `URLS` | Fixed list of pages (URLs or local HTML files). |
+| `URL_TEMPLATE`, `PAGES` | A template such as `"https://site.com/list?page={page}"` and the page numbers. |
+| `NEXT_SELECTOR`, `MAX_PAGES` | CSS of the "next page" link (`None` = do not follow) and the page limit. |
+| `ITEM_SELECTOR` | CSS selector of each repeated item (selectors mode). |
+| `FIELDS` | `{column: (CSS selector inside the item, what to extract)}`, where *what* is `"text"`, `"list"` (all matches joined by `;`) or an attribute such as `"href"` or `"src"`. |
+| `TABLE_INDEX`, `TABLE_CONTAINS` | Which table(s) to keep in tables mode. |
+| `WAIT_SECONDS`, `RESPECT_ROBOTS`, `RETRIES`, `TIMEOUT`, `USER_AGENT` | Politeness and robustness settings. Put your contact in the User-Agent. |
+| `CONVERT_NUMBERS` | Convert numbers stored as text. |
+| `OUTPUT_FOLDER`, `FILE_NAME` | Where results go and the base file name. |
+
+**Finding a CSS selector:** in the browser, right-click the element → *Inspect* → right-click the HTML node → *Copy → Copy selector*. Then simplify it to a class, such as `div.quote`.
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Mode, pages visited, errors, files created and a sample of the data. |
+| `<FILE_NAME>.csv` | The collected data (one CSV per table in tables mode). |
+| `<FILE_NAME>.xlsx` | The same data in an Excel workbook (one sheet per table). |
+
+Each row also carries the `source_url` it came from (and `table_on_page` in tables mode).
+
+## How to read the results
+
+- **Pages visited vs. errors**: errors list the URLs that failed and why (timeout, HTTP status).
+- **"Blocked by robots.txt"**: the site asks crawlers not to visit that path, and the tool respects it.
+- **"No items found"** or **"Fields always empty"**: the selector does not match the page. Inspect the page again and adjust `ITEM_SELECTOR` or `FIELDS`.
+- **Numeric conversion**: a text column becomes numeric only if at least 90% of its values convert cleanly. Otherwise it stays as text.
+- Sites change their layout over time. If a working configuration suddenly returns nothing, the selectors probably need updating.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Edit the `CONFIGURATION` cell: mode, pages and fields.
+2. Run the script in Spyder (F5) or with `python web_scraping.py`.
+3. Open `results/report.md` and the CSV/Excel files.
 
-## 🛠️ Tech stack
+## Example configuration
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+The default configuration collects quotes, authors, author links and tags from **quotes.toscrape.com**, a sandbox site built for scraping practice, following the "next page" link for up to five pages.
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the "scraping_colab" notebook of the Data Collection and Web Scraping module (MBA in Data Science and Analytics, USP/Esalq).
