@@ -1,87 +1,92 @@
-# Data Science Toolkit – Paulo Berlanda
+# 12 · LSTM Recurrent Neural Networks for Time Series
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that forecasts the next value of a time series with an **LSTM** (Long Short-Term Memory) network, using the last N observations as input. It splits the data in time order, normalizes without leakage, trains with early stopping, compares the network with the naive forecast and, for univariate series, forecasts several steps ahead.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+An LSTM is a recurrent neural network designed for sequences. It reads a **window** of past values one step at a time and keeps an internal memory, controlled by "gates", that decides what to remember and what to forget. The network learns to map each window of the last N periods to the next value. Additional series (exogenous variables, such as volume) can be added as inputs.
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+Since many series, especially financial prices, are hard to predict beyond their last value, the tool always compares the LSTM with the **naive model** (next value = last value).
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+## When to use it
 
----
+- Long series with complex, non-linear patterns.
+- Multivariate forecasting, where other series help predict the target.
+- As a challenger to the classical models in [09 · Time Series Forecasting](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting).
 
-## 🧭 Which tool should I use?
+**Prefer the classical models** for short series or when you need an explainable model and reliable intervals.
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+## How it works
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+1. **Load and sort** the series by date, optionally filtering a sub-series, and interpolate missing values.
+2. **Time-based split** into train, validation (end of the training part, used for early stopping) and test (end of the series).
+3. **MinMax normalization fitted only on the training part**, so the model never "sees" the scale of the future.
+4. **Sliding windows**: each input is the last `WINDOW` periods and the output is the next value of the target.
+5. **LSTM network**: one or more LSTM layers with dropout, followed by a dense output, trained with Adam and early stopping.
+6. **Test evaluation** (one step ahead) against the naive model, using RMSE, MAE, MAPE and R² on the original scale.
+7. **Recursive future forecast** (univariate only): each predicted value is fed back as input for the next step.
+8. **Save** the network and the scaler configuration.
 
----
+## Inputs
 
-## ⚙️ Common features
+**Data:** a table with a date column (or rows already in time order) and the target series. Optional exogenous columns.
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+**Configuration** (the `CONFIGURATION` cell):
 
-## 🚀 Getting started
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `DATE_COLUMN` | Date column (`None` if the rows are already ordered). |
+| `TARGET_COLUMN` | The series to forecast. |
+| `EXOGENOUS_VARIABLES` | Extra series used as lagged inputs, e.g. `["Volume"]`. |
+| `FILTER` | Select a sub-series, e.g. `{"Location": "Sydney"}`. |
+| `WINDOW` | Number of past periods used for each prediction. |
+| `TEST_PROPORTION`, `VALIDATION_PROPORTION` | Shares of the series reserved for testing and for early stopping. |
+| `FUTURE_HORIZON` | Steps to forecast ahead (univariate only; 0 = none). |
+| `LSTM_UNITS`, `DROPOUT` | Neurons per LSTM layer (e.g. `[64, 32]` = two layers) and dropout rate. |
+| `MAX_EPOCHS`, `PATIENCE`, `BATCH_SIZE`, `LEARNING_RATE`, `SEED` | Training settings. |
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Series summary, window counts, training epochs, LSTM vs. naive comparison, future forecast and interpretation. |
+| `test_metrics.csv` | RMSE, MAE, MAPE and R² of the LSTM and of the naive model on the test period. |
+| `test_forecasts.csv` | Actual values, LSTM forecast and naive forecast for each test period. |
+| `future_forecast.csv` | Recursive forecast for the next periods. |
+| `lstm_model.keras`, `scaler_and_config.joblib` | Trained network, scaler, columns and window size. |
+| `01_learning_curve.png`, `02_test.png` | Learning curve and test period chart. |
+
+## How to read the results
+
+- **LSTM vs. naive**: the LSTM is only worth using if it has a lower error than the naive model. If it does not, the series has little exploitable pattern beyond its last value, which is common in stock prices.
+- **RMSE / MAE**: average error in the series' unit (RMSE penalizes large errors more). **MAPE**: average % error. **R²**: share of the variance explained. It tends to look high for trending series even when the model only follows the last value, so always compare with the naive model.
+- **Learning curve**: training and validation losses should both fall and level off. A rising validation loss signals overfitting. The best epoch is the one restored by early stopping.
+- **Recursive forecast**: each step uses the previous forecast as input, so the error **accumulates** with the horizon.
+- Neural network results vary with the random seed. For decisions, repeat with other seeds and check the stability.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
+pip install tensorflow
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `lstm_time_series.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE`, `DATE_COLUMN` and `TARGET_COLUMN`).
+3. Run the script in Spyder (F5) or with `python lstm_time_series.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`PETR4.SA.csv` contains daily prices of the Petrobras (PETR4) stock: date, open, high, low, close, adjusted close and volume. The default configuration forecasts the closing price (`Close`).
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the Deep Learning course, Class 3 (LSTM with weatherAUS and PETR4), of the MBA in Data Science and Analytics (USP/Esalq).
