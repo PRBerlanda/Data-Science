@@ -1,87 +1,90 @@
-# Data Science Toolkit – Paulo Berlanda
+# 03 · Correspondence Analysis (ANACOR and MCA)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that checks whether **categorical variables** are associated and shows **which categories go together** on a perceptual map. With two variables it runs simple correspondence analysis (ANACOR); with three or more it runs multiple correspondence analysis (MCA). The choice is automatic.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+Correspondence analysis turns contingency tables (counts of how often categories occur together) into a map. Categories that tend to appear together are drawn close to each other, and categories that rarely co-occur are drawn far apart. Before drawing the map, the tool tests whether the association is real (chi-square) and pinpoints where it is (adjusted residuals).
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+## When to use it
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+- Surveys and questionnaires, including Likert scales.
+- Customer profiles described by categories (age range, plan, region, channel…).
+- Exploring which attributes are linked to an outcome category (e.g. which symptoms go with a diagnosis).
 
----
+**Do not use it when**
+- Your variables are mostly quantitative. Use [02 · PCA](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) or [01 · Cluster](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis). Numeric variables are accepted here, but they are binned into ranges.
+- You need an equation or a prediction. This technique is exploratory.
 
-## 🧭 Which tool should I use?
+## How it works
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+1. **Load the data** and select the variables (all columns except the ID, or a list).
+2. **Prepare the categories**: numeric variables with many distinct values are split into equal-size bins (low / medium / high by default). Columns that look like identifiers are rejected.
+3. **Chi-square test for every pair of variables** (H0: independence), reporting the % of expected frequencies below 5, the test's validity condition.
+4. **Variable filter (MCA)**: variables with no significant association with any other variable can be dropped, following the rule used in class.
+5. **Adjusted standardized residuals** for the relevant pairs (both variables in ANACOR; pairs with the *focus variable* in MCA). These show exactly which category pairs drive the association.
+6. **Fit ANACOR or MCA**, compute eigenvalues and inertia, and get coordinates for every category and every observation.
+7. **Perceptual map**, plus an optional map of the observations colored by the focus variable.
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+## Inputs
 
----
+**Data:** one row per observation, with categorical columns (text or codes). Numeric columns are binned automatically.
 
-## ⚙️ Common features
+**Configuration** (the `CONFIGURATION` cell):
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `ID_COLUMN`, `VARIABLES`, `IGNORE_COLUMNS` | Identifier, variables to use (`"auto"` = all) and columns to exclude. |
+| `FOCUS_VARIABLE` | Optional variable of interest: its residuals are detailed and the observation map is colored by it. |
+| `MAX_CATEGORIES` | A numeric column with up to this many distinct values is treated as categorical. |
+| `N_BINS` | Number of bins for numeric columns with more distinct values. |
+| `DROP_UNASSOCIATED` | MCA only: drop variables with no significant association. |
+| `N_DIMENSIONS` | Number of dimensions computed (the map uses the first two). |
+| `SIGNIFICANCE_LEVEL` | Significance level for the tests. |
+| `SHOW_OBSERVATIONS` | Draw observation points on the map. |
 
-## 🚀 Getting started
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Categories and frequencies, chi-square tests, significant residuals, inertia and interpretation guide. |
+| `chi2_tests.csv` | Chi-square, degrees of freedom, p-value and % of low expected frequencies for each pair. |
+| `residuals_<var1>_x_<var2>.csv` / `.png` | Adjusted residuals table and heatmap for each analyzed pair. |
+| `eigenvalues_inertia.csv` | Eigenvalue and % of inertia per dimension. |
+| `category_coordinates.csv` | Map coordinates of every category. |
+| `observations_with_coordinates.csv` | Data (with binned variables) plus each observation's coordinates. |
+| `perceptual_map.png`, `observations_map_focus.png` | The perceptual map and the observation map. |
+
+## How to read the results
+
+1. **Chi-square p-value < 0.05**: the two variables are associated. If more than 20% of expected frequencies are below 5, merge rare categories before trusting the test.
+2. **Adjusted residual > 1.96**: those two categories occur together **more** than expected by chance (5% significance). **Below −1.96**: they occur together **less** than expected.
+3. **Perceptual map**: categories that are close together are associated. Read the map together with the residuals: the map shows proximity, the residuals confirm significance.
+4. **% of inertia** on each axis shows how much of the association the 2D map represents. In MCA this percentage is usually low, so read the map as a summary rather than as proof.
+5. **Focus map**: if observations of one category of the focus variable cluster in one region, the categories in that region describe that group's profile.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `correspondence_analysis.py`.
+2. Edit the `CONFIGURATION` cell.
+3. Run the script in Spyder (F5) or with `python correspondence_analysis.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`dados_cor_acm.xlsx` is a heart disease dataset with patient attributes: age (`idade`), sex (`sexo`), chest pain type (`dor.peito`), resting blood pressure (`ps.descanco`), cholesterol (`colesterol`), fasting blood sugar (`acucar.sangue`), resting ECG (`ecg.descanco`), maximum heart rate (`bc.max`), exercise-induced angina (`angina.exerc`) and the diagnosis (`doenca.card`), which is the default focus variable. The quantitative attributes are binned automatically.
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the course scripts by Prof. Dr. Wilson Tarantin Junior (MBA in Data Science and Analytics, USP/Esalq). Theory: Fávero & Belfiore, *Manual de Análise de Dados*, Ch. 11.
