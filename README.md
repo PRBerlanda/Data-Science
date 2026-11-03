@@ -1,87 +1,103 @@
-# Data Science Toolkit – Paulo Berlanda
+# 09 · Time Series Forecasting (Benchmarks, ETS/Holt-Winters, SARIMA)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that forecasts a **univariate time series**. It prepares the date index, diagnoses trend, seasonality and stationarity, compares ten forecasting methods on a hold-out test period, refits the winner on the full series and forecasts ahead with confidence intervals.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+A time series is a sequence of values ordered in time (monthly sales, daily demand, quarterly revenue…). Forecasting methods learn the series' level, trend and seasonality from the past and project them forward. Because the best in-sample fit is not always the best forecaster, this tool **chooses the model by its performance on data it has not seen**: the last periods of the series, kept aside as a test set.
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+Methods compared:
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+| Family | Models |
+|---|---|
+| Benchmarks | naive (last value), mean, drift, seasonal naive |
+| Exponential smoothing | SES, Holt, additive Holt-Winters, multiplicative Holt-Winters |
+| Automatic searches | best-AIC ETS, automatic ARIMA/SARIMA |
 
----
+## When to use it
 
-## 🧭 Which tool should I use?
+- Forecasting sales, demand, revenue, consumption, prices, call volume, passengers…
+- One series at a time. Use the `FILTER` option to forecast a sub-series (e.g. one region).
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+**Use another model when** you want to test a recurrent neural network ([12 · LSTM](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series)) or explain Y with other variables at the same point in time ([04](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression)).
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+## How it works
 
----
+1. **Build the series**: detects the date column (or uses year + month columns, or the "1979.01" format), aggregates duplicates, optionally resamples (e.g. daily → monthly) and interpolates missing periods.
+2. **Diagnostics**:
+   - STL decomposition with **trend and seasonal strength**;
+   - classical decomposition chart (multiplicative when the series is positive);
+   - **ADF and KPSS** stationarity tests and the suggested differencing (d, D);
+   - **ACF and PACF** of the differenced series.
+3. **Train/test split** that respects time order. The test size defaults to one seasonal cycle (or 20% of the series).
+4. **Fit every model on the training part** and forecast the test period. Each is scored by MAPE, RMSE, MAE, Theil's U and confidence interval coverage.
+5. **Pick the best model** by the chosen criterion, **refit it on the full series** and forecast the requested horizon with confidence intervals.
+6. **Residual diagnostics** of the final model (Ljung-Box and Shapiro-Wilk).
 
-## ⚙️ Common features
+## Inputs
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+**Data:** a table with a value column and, ideally, a date column. Daily, weekly, monthly, quarterly and yearly data are supported.
 
-## 🚀 Getting started
+**Configuration** (the `CONFIGURATION` cell):
+
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `VALUE_COLUMN` | The series to forecast. |
+| `DATE_COLUMN` | Date column name, `"auto"` (detect) or `None` (no date; `START_DATE` + `FREQUENCY` are used). |
+| `YEAR_MONTH_COLUMNS` | Alternative when the date comes in two columns, e.g. `("year", "month")`. |
+| `FILTER` | Select a sub-series, e.g. `{"region": "North"}`. |
+| `FREQUENCY`, `AGGREGATION`, `RESAMPLE_TO` | Frequency (`"auto"`, `"MS"`, `"D"`…), how to aggregate duplicates, optional resampling. |
+| `SEASONALITY` | Seasonal period (12, 4, 7…), `"auto"` from the frequency, or `None`. |
+| `TEST_SIZE`, `FORECAST_HORIZON` | Number of test periods and of periods to forecast (`"auto"` = one cycle). |
+| `MODELS` | List of models to compare. |
+| `CRITERION` | `"MAPE"`, `"RMSE"` or `"MAE"`. |
+| `CONFIDENCE_LEVEL`, `MAX_P_Q` | Interval level and maximum ARIMA order searched. |
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Series summary, diagnostics, model ranking, final forecast, residual tests and interpretation. |
+| `model_comparison_test.csv` | Specification and test metrics of every model, sorted by the criterion. |
+| `test_forecasts.csv` | Actual test values and each model's forecast. |
+| `final_forecast.csv` | Forecast with lower and upper bounds for the future periods. |
+| `clean_series.csv` | The series after date handling, aggregation and interpolation. |
+| `01_series.png` … `06_residuals.png` | Series, decomposition, ACF/PACF, test comparison, final forecast and residuals. |
+
+## How to read the results
+
+- **Trend / seasonal strength** (0 to 1): above about 0.64 is strong. Strong seasonality favors seasonal models and seasonal differencing.
+- **ADF** (H0: not stationary) and **KPSS** (H0: stationary) together: stationary when ADF rejects and KPSS does not. Non-stationary series need differencing (handled automatically in ARIMA).
+- **MAPE**: average absolute error in % of the actual value, easy to communicate. **RMSE** penalizes large errors. **MAE** is the average absolute error in the series' unit.
+- **Theil's U**: below 1, the model beats the naive forecast (repeating the last value). Above 1, it is worse than naive.
+- **CI coverage**: share of test values that fell inside the interval. It should be close to the confidence level.
+- **If a simple benchmark wins**, the series has little exploitable pattern. Do not force a complex model.
+- **Ljung-Box p ≥ 0.05**: residuals behave like white noise, so the model captured the pattern. A low p-value means some structure is left.
+- The **confidence interval widens with the horizon**: distant forecasts are less precise.
+- Intervals of multiplicative ETS models are simulated, so their coverage can vary slightly between runs.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `time_series_forecasting.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE` and `VALUE_COLUMN`).
+3. Run the script in Spyder (F5) or with `python time_series_forecasting.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`airpassengers.xlsx` is the classic monthly airline passengers series: a month column (`mes`) and the number of passengers (`passengers`). It has a clear upward trend and yearly seasonality.
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the "Time Series" course script by Prof. Fabiano Guasti Lima (MBA in Data Science and Analytics, USP/Esalq).
