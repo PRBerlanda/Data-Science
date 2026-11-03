@@ -1,87 +1,98 @@
-# Data Science Toolkit – Paulo Berlanda
+# 16 · Social Network Analysis (SNA)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that analyzes a **network of relationships** from an edge list (who is connected to whom). It computes network-level metrics, ranks actors by several centrality measures, detects communities with four algorithms, keeps the one with the highest modularity, and exports a picture of the network plus a file for Gephi.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+Social network analysis studies the **structure** of relationships rather than the attributes of individuals. Each actor is a node, and each relationship is an edge, optionally directed (A → B) and weighted (number of messages, amount transferred). From that structure, the tool answers three questions:
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+1. **What does the network look like as a whole?** How dense, connected and clustered it is.
+2. **Who is central?** Popular, bridging, close to everyone, or connected to other important actors.
+3. **Which groups exist?** Communities of actors more connected among themselves than with the rest.
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+## When to use it
 
----
+- E-mail or chat networks inside a company (informal leaders, silos).
+- Financial transfers (fraud rings, money flows), co-authorship, referrals, joint purchases.
+- Supplier/customer networks, social media interactions, citation networks.
 
-## 🧭 Which tool should I use?
+## How it works
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+1. **Build the network** from the source and target columns, either directed or undirected (`"auto"` reads a `Type` column if present). Self-loops can be removed, and repeated edges add up their weight.
+2. **Network metrics**: nodes, edges, density, mean degree, connected components, transitivity, mean clustering, diameter and average shortest path of the largest component, and reciprocity for directed networks.
+3. **Centrality of each actor**: degree, normalized degree, betweenness, closeness, PageRank, eigenvector, clustering coefficient, eccentricity, and in/out degree for directed networks.
+4. **Communities** with Louvain, greedy modularity, label propagation and Girvan-Newman (skipped for large networks). The partition with the **highest modularity** is chosen, and the most connected actor of each community is reported.
+5. **Visualization**: network colored by community with node size proportional to degree, plus the degree distribution.
+6. **Export** of the metrics and a `.gexf` file to open in Gephi.
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+## Inputs
 
----
+**Data:** an edge list, with one row per relationship and columns for source, target and, optionally, weight and type.
 
-## ⚙️ Common features
+**Configuration** (the `CONFIGURATION` cell):
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator (auto-detected). |
+| `SOURCE_COLUMN`, `TARGET_COLUMN` | Columns with the two ends of each edge. |
+| `WEIGHT_COLUMN` | Optional edge weight (`None` = unweighted). |
+| `DIRECTED` | `True`, `False` or `"auto"`. |
+| `REMOVE_SELF_LOOPS` | Ignore edges from a node to itself. |
+| `COMMUNITY_METHODS` | Community algorithms to compare. |
+| `TOP_N` | Number of top actors listed per centrality measure. |
+| `SEED` | Reproducibility of layouts and stochastic algorithms. |
+| `MAX_PLOT_NODES` | Above this size, only the top nodes by degree are drawn. |
 
-## 🚀 Getting started
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Network summary, metrics, most central actors, community comparison and interpretation. |
+| `network_metrics.csv` | Network-level metrics. |
+| `actor_metrics.csv` | All centrality measures and the community of each actor. |
+| `community_comparison.csv` | Modularity, number and size of communities for each method. |
+| `network.gexf` | The network, ready to open in Gephi. |
+| `01_network_communities.png`, `02_degree_distribution.png` | Network picture and degree histogram. |
+
+## How to read the results
+
+**Network level**
+- **Density**: share of possible edges that exist (0 to 1). Real networks are usually sparse.
+- **Components**: separate pieces of the network. The largest component holds most actors in a connected network.
+- **Diameter / average path**: the longest and the typical number of steps between two actors. Short paths mean information spreads quickly.
+- **Transitivity / clustering**: the chance that two contacts of the same actor are also connected ("friends of friends").
+
+**Actor level**
+- **Degree**: number of connections (popularity, activity).
+- **Betweenness**: how often the actor lies on the shortest path between others. These are bridges that control the flow between groups. **High betweenness with low degree** is a classic bridge: a risk if the actor leaves, and an opportunity to spread information.
+- **Closeness**: how quickly the actor can reach everyone else.
+- **Eigenvector / PageRank**: influence from being connected to other influential actors.
+
+**Communities**
+- **Modularity** (−0.5 to 1): above about 0.3 indicates a clear community structure.
+- Communities often reveal informal teams, customer segments or collusive groups. The most connected actor of each community is a natural point of contact.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your edge list next to `social_network_analysis.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE`, `SOURCE_COLUMN` and `TARGET_COLUMN`).
+3. Run the script in Spyder (F5) or with `python social_network_analysis.py`.
+4. Open `results/report.md`, or `results/network.gexf` in Gephi.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`karate.csv` is Zachary's karate club network, a classic in network science: friendships between members of a university karate club. It uses semicolon-separated `Source`, `Target` and `Type` columns, and all edges are undirected.
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the Social Network Analysis course scripts (MBA in Data Science and Analytics, USP/Esalq).
