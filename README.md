@@ -1,87 +1,100 @@
-# Data Science Toolkit – Paulo Berlanda
+# 04 · Simple and Multiple Linear Regression (OLS)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that **explains and predicts a continuous variable** from quantitative and/or categorical explanatory variables. Beyond fitting the model, it runs stepwise selection, checks every classical assumption, applies a Box-Cox transformation or robust standard errors when needed, measures out-of-sample error and predicts new data with prediction intervals.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+Ordinary least squares (OLS) regression estimates a linear equation
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+`Y = β0 + β1·X1 + β2·X2 + … + error`
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+choosing the coefficients that minimize the sum of squared errors. Each coefficient tells how much Y changes, on average, when one explanatory variable increases by one unit and the others stay constant.
 
----
+## When to use it
 
-## 🧭 Which tool should I use?
+- Y is **continuous**: price, revenue, time, score, return, consumption…
+- You want to **explain** the effect of each factor (with significance tests), not only predict.
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+**Use another model when** Y is binary ([05](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression)), has 3+ unordered classes ([06](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression)), is a count 0, 1, 2… ([07](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models)), the observations are nested in groups ([08](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling)), or predictive accuracy matters more than interpretation ([10](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles)).
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+## How it works
 
----
+1. **Load the data** and build X: categorical variables become dummies (n − 1 categories; the omitted one is the reference).
+2. **Full model**, then **backward stepwise**: the variable with the highest p-value above the threshold is removed, one at a time, until all remaining ones are significant.
+3. **Assumption diagnostics**:
+   - residual normality (Shapiro-Wilk for n < 30, Shapiro-Francia otherwise);
+   - homoskedasticity (Breusch-Pagan);
+   - multicollinearity (VIF and tolerance);
+   - influential observations (Cook's distance > 4/n).
+4. **Box-Cox** (automatic when residuals are not normal and Y > 0): finds the λ that brings Y closest to normal, refits, and keeps the transformed model only if it improves normality. Predictions are always returned on the original scale.
+5. **Robust standard errors (HC3)** when Breusch-Pagan detects heteroskedasticity.
+6. **K-fold cross-validation**: R², RMSE and MAE measured on data the model did not see.
+7. **Diagnostic charts** and, if a file is provided, **predictions for new observations** with a 95% prediction interval.
 
-## ⚙️ Common features
+## Inputs
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+**Data:** one row per observation with a numeric target and the explanatory variables. Text columns are treated as categorical automatically.
 
-## 🚀 Getting started
+**Configuration** (the `CONFIGURATION` cell):
+
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `TARGET` | The continuous Y. |
+| `X_VARIABLES` | List of explanatory variables or `"auto"` (all except target, ID and ignored). |
+| `ID_COLUMN`, `IGNORE_COLUMNS` | Columns kept out of the model. |
+| `CATEGORICAL_VARIABLES` | `"auto"` (text/boolean) or a list, e.g. numeric codes that are really categories. |
+| `STEPWISE`, `P_VALUE_THRESHOLD` | Turn stepwise selection on/off and set its threshold. |
+| `BOX_COX` | `"auto"`, `True` or `False`. |
+| `ROBUST_ERRORS` | `"auto"` (when heteroskedastic), `True` or `False`. |
+| `CROSS_VALIDATION`, `SEED` | Number of folds (0 = off) and random seed. |
+| `PREDICT_FILE` | Optional file with new observations (same X columns) to predict. |
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Data summary, stepwise steps, fit statistics, assumption tests, coefficients, cross-validation and interpretation. |
+| `coefficients.csv` | Coefficient, standard error, p-value and 95% CI for each term. |
+| `robust_coefficients.csv` | Robust (HC3) standard errors and p-values, when used. |
+| `statsmodels_summary.txt` | Full statsmodels summary of the final model. |
+| `data_with_predictions.csv` | Original data plus fitted value, residual and Cook's distance. |
+| `new_data_predictions.csv` | Predictions and 95% prediction interval for `PREDICT_FILE`. |
+| `01_residual_diagnostics.png` | Observed × predicted, residuals × fitted, Q-Q plot and residual histogram. |
+
+## How to read the results
+
+- **R² / adjusted R²**: share of the variance of Y explained by the model. Adjusted R² penalizes extra variables.
+- **F test p-value < 0.05**: the model as a whole explains Y better than the mean alone.
+- **Coefficient**: average change in Y for +1 unit of X, holding the others constant. For a **dummy**, it is the average difference relative to the reference category. When Box-Cox is applied, coefficients are on the transformed scale: interpret the sign, and use the predictions to see the effect on Y.
+- **p-value < 0.05**: the effect is statistically different from zero. Also ask whether the size of the effect matters for the business.
+- **95% CI**: the range of plausible values for the coefficient.
+- **Normality / Breusch-Pagan**: when violated, p-values and intervals may be unreliable. The script reacts with Box-Cox and robust errors.
+- **VIF > 5** deserves attention, **> 10** is a serious multicollinearity problem.
+- **Cross-validated R² much lower than the fit R²** means overfitting.
+- **Prediction interval**: the range where a new individual observation is expected to fall. It is wider than the confidence interval of the mean.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `linear_regression.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE` and `TARGET`).
+3. Run the script in Spyder (F5) or with `python linear_regression.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`empresas.csv` contains companies (`empresa`) with their stock return (`retorno`, the target) and four candidate explanatory variables: disclosure index, indebtedness (`endividamento`), total assets (`ativos`) and liquidity (`liquidez`).
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the "01 - Simple and Multiple Regression" course script by Prof. Dr. Luiz Paulo Fávero (MBA in Data Science and Analytics, USP/Esalq). Theory: Fávero & Belfiore, *Manual de Análise de Dados*, Ch. 12.
