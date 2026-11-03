@@ -1,87 +1,95 @@
-# Data Science Toolkit – Paulo Berlanda
+# 01 · Cluster Analysis (Hierarchical + K-means)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that groups observations that are similar to each other, and different from the other groups, based on **quantitative variables**. It runs both agglomerative hierarchical clustering and k-means, picks the number of clusters automatically, tests which variables really separate the groups, and writes a report you can read without opening the code.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+Cluster analysis is an **unsupervised, exploratory** technique: there is no target variable. The algorithm measures the distance between observations and builds groups (clusters) so that observations in the same group are close and groups are far apart. The result is a label for each observation (cluster 1, 2, 3, …) plus a profile that describes what makes each group different.
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+## When to use it
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+- Segmenting customers, stores, regions, products or employees when no label exists yet.
+- Building personas or tiers from behavior (spending, frequency, channel usage…).
+- As a first step before other models, to discover structure in the data.
 
----
+**Do not use it when**
+- The variables are categorical. Use [03 · Correspondence Analysis](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) instead.
+- You need to predict a known outcome. Use a supervised model (04–12).
+- You need to score new observations with a fixed rule. Clustering is descriptive; with new data, rerun the analysis.
 
-## 🧭 Which tool should I use?
+## How it works
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+1. **Load the data** (CSV, Excel, Parquet, Pickle or JSON) and select the variables, either listed by you or all numeric columns.
+2. **Handle missing values**: drop the rows or impute the mean.
+3. **Standardize (Z-score)** when the variables are on very different scales, so that no variable dominates the distance just because of its unit.
+4. **Choose the number of clusters (k)**: k-means is run for a range of k, recording the **elbow** (within-cluster sum of squares) and the **silhouette**. The k with the highest mean silhouette is used, unless you fix it.
+5. **Hierarchical clustering**: builds the dendrogram with the chosen distance and linkage, then cuts it into k groups.
+6. **K-means**: assigns each observation to the nearest centroid. When both methods run, a cross-table compares their assignments.
+7. **ANOVA per variable**: tests whether each variable's mean differs across clusters, showing which variables actually drive the segmentation.
+8. **Profile**: means per cluster on the original scale, a heatmap in standard deviations and a 2D projection (PCA) of the clusters.
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+## Inputs
 
----
+**Data:** one row per observation, with at least two numeric columns. An ID column is optional and is kept in the output but never used in the calculation.
 
-## ⚙️ Common features
+**Configuration** (edit only the `CONFIGURATION` cell at the top of the script):
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator (auto-detected when `None`). |
+| `ID_COLUMN` | Identifier column, excluded from the calculation. |
+| `VARIABLES` | List of variables, or `"auto"` for all numeric columns. |
+| `IGNORE_COLUMNS` | Numeric columns that must not be used (e.g. account numbers). |
+| `STANDARDIZE` | `True`, `False` or `"auto"` (standardizes when scales differ). |
+| `MISSING_VALUES` | `"drop"` rows or impute the `"mean"`. |
+| `METHOD` | `"kmeans"`, `"hierarchical"` or `"both"`. |
+| `N_CLUSTERS` | A fixed integer, or `"auto"` (highest silhouette). |
+| `K_MIN`, `K_MAX` | Range of k tested in automatic mode. |
+| `DISTANCE`, `LINKAGE` | Distance metric and linkage method for the hierarchical step. |
+| `SEED` | Reproducibility of k-means. |
+| `OUTPUT_FOLDER`, `SHOW_PLOTS` | Where results go and whether charts pop up. |
 
-## 🚀 Getting started
+## Outputs
+
+Everything is saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Full report: data summary, choice of k, cluster sizes, ANOVA, profile and interpretation tips. |
+| `data_with_clusters.csv` | Original data plus the cluster label(s) for each observation. |
+| `cluster_profile.csv` | Number of observations and mean of each variable per cluster. |
+| `anova_variables.csv` | F statistic and p-value per variable. |
+| `number_of_clusters_evaluation.csv` | WCSS and silhouette for each k tested. |
+| `01_elbow_silhouette.png` … `04_clusters_2d.png` | Elbow/silhouette, dendrogram, profile heatmap and 2D projection. |
+
+## How to read the results
+
+- **Silhouette** (−1 to 1) measures how well each observation fits its cluster compared with the nearest other cluster. As a rule of thumb: below 0.25 the structure is weak, 0.25–0.5 is fair, above 0.5 is good.
+- **Elbow chart**: the point where adding clusters stops reducing the WCSS sharply is a natural candidate for k. Use it together with the silhouette and with business sense.
+- **ANOVA**: a variable with p-value < 0.05 differs significantly between clusters. The larger the F, the more it contributes to the separation. Variables that do not differentiate can be removed and the analysis rerun.
+- **Profile heatmap** (values in standard deviations): positive cells mean the cluster is above the overall mean on that variable; negative cells mean below. Use this to **name** each cluster (e.g. "high limit, digital users").
+- **Hierarchical × k-means table**: strong agreement between the two methods suggests stable groups.
+- Clusters are a description, not a truth: validate them with people who know the business before acting on them.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file in the same folder as `cluster_analysis.py` (or set an absolute path in `FILE`).
+2. Edit the `CONFIGURATION` cell.
+3. Run the script, either in Spyder (F5, or cell by cell with Ctrl+Enter) or from the terminal with `python cluster_analysis.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`cartao_credito.csv` contains credit card customers: an ID (`Sl_No`), a customer key, the average credit limit, the number of cards, and the number of bank visits, online visits and calls made. The default configuration segments these customers by their limit and contact-channel behavior.
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the course scripts by Prof. Dr. Wilson Tarantin Junior (MBA in Data Science and Analytics, USP/Esalq). Theory: Fávero & Belfiore, *Manual de Análise de Dados*, Ch. 9.
