@@ -1,87 +1,95 @@
-# Data Science Toolkit – Paulo Berlanda
+# 02 · Principal Component Factor Analysis (PCA)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool that summarizes many correlated quantitative variables into a few **factors**. It checks whether the data is suitable for factor analysis, decides how many factors to keep, shows how each variable relates to each factor and, optionally, builds a **ranking** from the factor scores.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+When several variables move together (they are correlated), part of the information they carry is redundant. Principal component factor analysis finds new variables, the **factors**, that are linear combinations of the originals, are uncorrelated with each other and capture as much of the shared variance as possible. A handful of factors can then replace many variables.
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+## When to use it
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+- Building an **index or ranking** from several indicators (e.g. a performance score from grades in several subjects, a development index from socioeconomic indicators).
+- **Reducing dimensionality** before another model (clustering, regression).
+- **Removing multicollinearity**: the factors are orthogonal and can enter a regression together.
 
----
+**Do not use it when**
+- The variables are not correlated with each other. The Bartlett test and KMO will flag this.
+- The variables are categorical. Use [03 · Correspondence Analysis](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis).
+- You have very few observations per variable (fewer than about 5).
 
-## 🧭 Which tool should I use?
+## How it works
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+1. **Load the data** and select the numeric variables (listed or automatic).
+2. **Correlation matrix**: Pearson correlations, shown as a heatmap.
+3. **Adequacy tests**:
+   - *Bartlett's sphericity test* checks whether the correlations are, as a whole, different from zero.
+   - *KMO (Kaiser-Meyer-Olkin)* measures the share of common variance, overall and per variable.
+4. **Eigenvalues**: each eigenvalue is the variance captured by one factor. The **Kaiser criterion** keeps factors with eigenvalue > 1, unless you fix the number of factors.
+5. **Loadings and communalities** of the retained factors, optionally with varimax rotation. Factor signs can be oriented so that "higher" means "more of the characteristic".
+6. **Factor scores** for each observation and, if enabled, a **ranking score**: the sum of the scores weighted by each factor's share of explained variance.
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+## Inputs
 
----
+**Data:** one row per observation, at least three numeric variables. An ID column is optional.
 
-## ⚙️ Common features
+**Configuration** (the `CONFIGURATION` cell):
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `ID_COLUMN` | Row identifier (kept in the output, not used in the analysis). |
+| `VARIABLES`, `IGNORE_COLUMNS` | Variables to use (`"auto"` = all numeric) and columns to exclude. |
+| `MISSING_VALUES` | `"drop"` rows or impute the `"mean"`. |
+| `N_FACTORS` | Fixed number, or `"auto"` (Kaiser criterion). |
+| `ROTATION` | `None` or `"varimax"` (easier to interpret when several factors are kept). |
+| `LOADING_THRESHOLD` | Minimum absolute loading to list a variable under a factor in the report. |
+| `CREATE_RANKING`, `RANKING_FACTORS` | Whether to build the ranking and which factors enter it. |
+| `ORIENT_FACTORS` | Flips factor signs so that most loadings are positive. |
 
-## 🚀 Getting started
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Adequacy tests, eigenvalues, loadings, communalities, top of the ranking and interpretation tips. |
+| `data_with_scores.csv` | Original data plus one score column per factor and, if enabled, the ranking score and position. |
+| `loadings_communalities.csv` | Loading of each variable on each factor and its communality. |
+| `factor_score_weights.csv` | Weights to compute the factor scores of new observations. |
+| `eigenvalues.csv` | Eigenvalue, % of variance and cumulative % per factor. |
+| `correlations.csv` | Correlation matrix. |
+| `01_correlations.png` … `04_loading_plot.png` | Correlation heatmap, scree plot, loading heatmap and loading plot. |
+
+## How to read the results
+
+- **Bartlett p-value < 0.05**: the correlations are strong enough for factor analysis. If it is not significant, the factors will not summarize the variables well.
+- **KMO**: ≥ 0.9 marvelous, 0.8 meritorious, 0.7 middling, 0.6 mediocre, 0.5 miserable, below 0.5 unacceptable. A low KMO for a single variable suggests removing it.
+- **Eigenvalue / explained variance**: how much of the total information each factor keeps. The cumulative % shows how much the retained factors summarize.
+- **Loading**: the correlation between a variable and a factor (−1 to 1). Look at the variables with the largest absolute loadings to **name** the factor (e.g. "quantitative skills").
+- **Communality**: the share of a variable's variance explained by the retained factors. Below 0.5 means the variable is poorly represented.
+- **Factor score**: the position of each observation on a factor (mean 0, standard deviation 1). Positive means above average on that dimension.
+- **Ranking score**: a single number combining the factors, weighted by their importance. Check the direction of each factor before reading "higher" as "better".
+- To score **new observations**, standardize their variables with this dataset's mean and standard deviation and multiply by the weights in `factor_score_weights.csv`.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `pca_factor_analysis.py` (or use an absolute path in `FILE`).
+2. Edit the `CONFIGURATION` cell.
+3. Run the script in Spyder (F5) or with `python pca_factor_analysis.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`notas_fatorial.xlsx` contains students (`estudante`) and their grades in four subjects: finance (`finanças`), costs (`custos`), marketing and actuarial science (`atuária`). The default configuration extracts the factors behind the grades and ranks the students.
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the course scripts by Prof. Dr. Wilson Tarantin Junior (MBA in Data Science and Analytics, USP/Esalq). Theory: Fávero & Belfiore, *Manual de Análise de Dados*, Ch. 10.
