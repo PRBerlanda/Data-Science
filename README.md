@@ -1,4 +1,4 @@
-# Data Science Toolkit – Paulo Berlanda
+# Data Science Toolkit
 
 A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
 
