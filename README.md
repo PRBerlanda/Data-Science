@@ -1,87 +1,99 @@
-# Data Science Toolkit – Paulo Berlanda
+# 07 · Models for Count Data (Poisson, Negative Binomial, ZIP, ZINB)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool for targets that are **counts** (0, 1, 2, …). It fits a Poisson model, tests for overdispersion, moves to a Negative Binomial when needed, tests for excess zeros with zero-inflated versions, compares all candidates, and reports incidence rate ratios and predictions.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+Count data cannot be negative, is made of integers and is often skewed with many zeros, so linear regression is a poor fit. Count models describe the **expected count** as
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+`E[Y] = exp(β0 + β1·X1 + β2·X2 + …)`
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+and assume a distribution suited to counts:
 
----
+| Model | When it fits |
+|---|---|
+| **Poisson** | Mean ≈ variance (equidispersion). |
+| **Negative Binomial (NB2)** | Variance > mean (overdispersion), the most common case in practice. |
+| **ZIP / ZINB** | More zeros than the base model expects. Two processes: one decides whether the observation is a "certain zero", the other generates the count. |
 
-## 🧭 Which tool should I use?
+## When to use it
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+- Number of complaints, claims, defects, visits, violations, accidents, purchases per month, absences…
+- Rates per unit of exposure (e.g. events per month observed), using an exposure column.
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+**Use another model when** Y is continuous ([04](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression)) or binary ([05](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression)).
 
----
+## How it works
 
-## ⚙️ Common features
+1. **Validate Y**: it must contain integers ≥ 0. The report shows its mean, variance and share of zeros.
+2. **Poisson** model (GLM), optionally with stepwise selection.
+3. **Cameron & Trivedi overdispersion test**. A significant result means the Poisson standard errors are too small, so a Negative Binomial is preferred.
+4. **Negative Binomial (NB2)** with its dispersion parameter α, plus a likelihood-ratio test of α = 0.
+5. **Zero-inflated models (ZIP and ZINB)** with their own set of inflation variables, compared with the base models by the **Vuong test**.
+6. **Automatic choice** (`MODEL = "auto"`): Poisson or NegBin depending on overdispersion, then the zero-inflated version if the Vuong test favors it. You can also force a model.
+7. **Comparison table** (LL, AIC, BIC), coefficients with **IRR** and 95% CI, **observed × predicted distribution** chart, and predictions.
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+## Inputs
 
-## 🚀 Getting started
+**Data:** one row per observation, a non-negative integer target and the explanatory variables.
+
+**Configuration** (the `CONFIGURATION` cell):
+
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `TARGET` | The count variable. |
+| `X_VARIABLES`, `ID_COLUMN`, `IGNORE_COLUMNS` | Explanatory variables and columns to exclude. |
+| `CATEGORICAL_VARIABLES` | `"auto"` or a list of columns to treat as categories. |
+| `EXPOSURE_COLUMN` | Optional exposure (time, area, population) to model rates. |
+| `MODEL` | `"auto"`, `"poisson"`, `"negbin"`, `"zip"` or `"zinb"`. |
+| `INFLATION_VARIABLES` | Explanatory variables of the "certain zero" part of ZI models (`"auto"` = same as X). |
+| `STEPWISE`, `P_VALUE_THRESHOLD` | Stepwise selection (on the Poisson model) and its threshold. |
+| `PREDICT_FILE` | Optional file with new observations. |
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Descriptive statistics of Y, overdispersion and Vuong tests, model comparison, coefficients/IRR and interpretation. |
+| `model_comparison.csv` | LL, AIC, BIC and number of parameters for every fitted model. |
+| `coefficients_irr.csv` | Coefficient, p-value and IRR with CI for the chosen model. |
+| `statsmodels_summary.txt` | Full summary of the chosen model. |
+| `data_with_predictions.csv` | Original data plus the expected count from every model. |
+| `new_data_predictions.csv` | Expected count for `PREDICT_FILE` from the chosen model. |
+| `01_observed_x_predicted.png` | Observed share of each count vs. the share predicted by each model. |
+
+## How to read the results
+
+- **Variance much larger than the mean** is an early sign of overdispersion. The Cameron & Trivedi test confirms it formally.
+- **Ignoring overdispersion** underestimates standard errors and makes p-values look artificially small. That is why the test comes before the choice.
+- **Vuong test** with a positive statistic and p < 0.05 means the zero-inflated model fits better.
+- **AIC / BIC**: lower is better when comparing models on the same data.
+- **IRR (incidence rate ratio) = exp(coefficient)**: the expected count is multiplied by the IRR for +1 unit of X. For example, IRR = 1.20 means a 20% higher expected count; IRR = 0.80 means 20% lower.
+- **`inflate_` rows** (ZI models): logit coefficients of the probability of being a structural zero. A positive coefficient means a higher chance of a certain zero.
+- **Observed × predicted chart**: the best model follows the observed bars, especially at zero and in the tail.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `count_data_models.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE`, `TARGET` and `X_VARIABLES`).
+3. Run the script in Spyder (F5) or with `python count_data_models.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+## Example dataset
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+`corruption.csv` is the classic diplomatic parking violations dataset: for each country (`country`, `code`) and period, the number of unpaid parking violations (`violations`, the target), the number of diplomats (`staff`), whether the observation is after the law change (`post`: yes/no) and the country's corruption index (`corruption`).
 
-## 📬 About
+## Credits
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+Built from the "03 - Models for Count Data" course script by Prof. Dr. Luiz Paulo Fávero (MBA in Data Science and Analytics, USP/Esalq). Theory: Fávero & Belfiore, *Manual de Análise de Dados*, Ch. 14.
