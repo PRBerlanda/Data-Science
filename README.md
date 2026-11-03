@@ -1,87 +1,110 @@
-# Data Science Toolkit – Paulo Berlanda
+# 10 · Decision Trees and Ensembles (Random Forest, XGBoost, LightGBM)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool for **predicting a target**, either a class (classification) or a value (regression), with tree-based models. It builds a leakage-free pipeline, compares the models with baselines through cross-validation and hyperparameter search, evaluates the winner on a test set, explains it with permutation importance and SHAP, and saves a reusable model.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+A **decision tree** splits the data with a sequence of yes/no questions (e.g. "age < 30?") until it reaches groups that are homogeneous in the target. Single trees are easy to read but unstable. **Ensembles** combine many trees:
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+- **Random Forest**: many trees, each trained on a random sample of rows and variables, averaged together.
+- **Gradient boosting (XGBoost, LightGBM)**: trees built one after another, each correcting the errors of the previous ones.
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+These models capture non-linear relationships and interactions automatically and usually give the best accuracy on tabular data.
 
----
+## When to use it
 
-## 🧭 Which tool should I use?
+- **Prediction is the priority**: churn, default, fraud, demand, price, risk scores…
+- Many variables, mixed types, non-linear effects or interactions.
+- Both binary/multiclass classification and regression.
 
+**Use another model when** you need coefficients and formal significance tests to explain effects ([04](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression)–[08](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling)) or the data is a time series ([09](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting)).
+
+## How it works
+
+1. **Load and prepare the data**: numbers stored as text ("$1,200", "1.234,56") are converted, and columns that look like identifiers are removed.
+2. **Detect the problem type**: classification (text, boolean or few integer values) or regression.
+3. **Leakage check**: flags numeric variables that predict the target almost perfectly on their own, which usually means information from the future.
+4. **Train/test split**, stratified for classification, or a test file you provide.
+5. **Pipeline without leakage**: median/most-frequent imputation and one-hot encoding are fitted only on the training folds.
+6. **Model comparison by cross-validation**: two baselines (majority class or mean, and logistic or linear regression) plus a decision tree, Random Forest, XGBoost and LightGBM, each with a random or grid **hyperparameter search**.
+7. **Overfitting check**: training score vs. validation score of the best model.
+8. **Final evaluation on the test set**, used only once: accuracy, macro F1, AUC/Gini and confusion matrix (classification), or RMSE, MAE, R² and MAPE (regression).
+9. **Explainability**: permutation importance on the test set and SHAP values (summary plot and explanation of one individual case).
+10. **Final model** refit on all data, saved as a reusable pipeline, plus optional predictions for new data.
+
+## Inputs
+
+**Data:** one row per case with the target and the explanatory variables, as CSV, Excel, Parquet, Pickle or JSON. Separate X and y files and a ready-made test set are also supported.
+
+**Configuration** (the `CONFIGURATION` cell):
+
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `TARGET`, `X_VARIABLES`, `ID_COLUMN`, `IGNORE_COLUMNS` | Target, explanatory variables and columns to exclude. |
+| `CONVERT_NUMERIC_TEXT` | Convert numbers stored as text. |
+| `Y_FILE`, `TEST_FILE`, `TEST_Y_FILE` | Optional pre-split files. |
+| `PROBLEM_TYPE`, `POSITIVE_CLASS` | `"auto"`, `"classification"` or `"regression"`, and the class of interest in binary problems. |
+| `MODELS` | Models to compare: `"tree"`, `"random_forest"`, `"xgboost"`, `"lightgbm"`. |
+| `SEARCH`, `N_SEARCH_ITER` | `"random"`, `"grid"` or `None`, and the number of random combinations. |
+| `FOLDS`, `TEST_PROPORTION`, `METRIC`, `SEED` | Cross-validation folds, test share, selection metric and seed. |
+| `COMPUTE_SHAP`, `SHAP_SAMPLE` | SHAP explanations and sample size. |
+| `REFIT_ON_ALL_DATA` | Refit the final model on train + test before saving. |
+| `PREDICT_FILE` | Optional file with new cases to predict. |
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Data summary, leakage check, cross-validation table, overfitting check, test metrics, importances and reuse instructions. |
+| `model_comparison_cv.csv` | Cross-validated score, standard deviation, training score, time and best hyperparameters of each model. |
+| `permutation_importance.csv` | Loss in the metric when each variable is shuffled. |
+| `shap_importance.csv` | Mean absolute SHAP value per (encoded) variable. |
+| `final_model.joblib` | The trained pipeline (preprocessing + model), ready to reuse. |
+| `new_data_predictions.csv` | Predictions for `PREDICT_FILE`. |
+| `01_roc_curve.png` / `01_observed_predicted.png`, `02_confusion_matrix.png`, `03_permutation_importance.png`, `04_shap_summary.png`, `05_shap_individual_case.png` | Charts. |
+
+## How to read the results
+
+- **Baselines first**: a model only adds value if it clearly beats the baselines.
+- **Cross-validation score ± standard deviation**: the expected performance and its stability. Small differences between models may not be meaningful.
+- **Training much better than validation** (gap above about 10%): overfitting. Prefer simpler hyperparameters or more regularization.
+- **Classification metrics**: AUC (0.5 = random, > 0.8 good), macro F1 (balances all classes), confusion matrix (which classes get confused).
+- **Regression metrics**: RMSE and MAE in the target's unit, R² as the share of variance explained, MAPE as the average % error.
+- **Permutation importance**: how much the test metric worsens when a variable is shuffled. It works for any model.
+- **SHAP**: each variable's contribution to each individual prediction. In the summary plot, points to the right push the prediction up. Color shows whether the variable's value was high or low.
+- Importance shows what the model **uses**, not causality.
+- Reuse the saved model with:
+
+```python
+import joblib
+package = joblib.load("results/final_model.joblib")
+predictions = package["pipeline"].predict(new_data[package["variables"]])
 ```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
-
----
-
-## ⚙️ Common features
-
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
-
-## 🚀 Getting started
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `trees_ensembles.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE` and `TARGET`).
+3. Run the script in Spyder (F5) or with `python trees_ensembles.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+XGBoost, LightGBM and SHAP are optional: the script skips whatever is not installed.
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+## Example dataset
 
-## 📬 About
+`titanic1.pkl` is a prepared version of the Titanic passengers dataset (pandas pickle): survival (`survived`, the target), ticket class (`pclass`), age, number of siblings/spouses (`sibsp`) and parents/children (`parch`) aboard, fare, and dummies for sex (`sex_male`) and port of embarkation (`embarked_Q`, `embarked_S`).
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+## Credits
+
+Built from Classes 01–04 and the practical classes of "Trees, Networks and Ensemble Models" by Prof. João Mello and team (MBA in Data Science and Analytics, USP/Esalq).
