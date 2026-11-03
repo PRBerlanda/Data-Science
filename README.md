@@ -1,87 +1,103 @@
-# Data Science Toolkit – Paulo Berlanda
+# 13 · Text Mining, Sentiment Analysis and Text Classification (NLP)
 
-A collection of **ready-to-use data science tools in Python**, one per technique: from clustering and regression to time series, tree ensembles, neural networks, text mining, optimization and network analysis.
+A ready-to-use tool for a **column of texts**: comments, reviews, survey answers, support tickets, e-mails. It cleans the texts, finds the most frequent words and expressions, draws a word cloud, discovers topics with LDA and, when the texts have a label or a rating, trains a text classifier that can label new texts. Lexicon-based sentiment is optional.
 
-Each tool is a single, well-documented script. You edit one **CONFIGURATION** block (file, columns, options), run it, and get a `results/` folder with tables, charts and a written report (`report.md`) that explains the findings. Where a decision has a standard criterion (number of clusters, number of factors, best forecasting model, cutoff, overdispersion…), the script makes it automatically and tells you why. You can always override it.
-
-The tools were developed from the course material of the **MBA in Data Science and Analytics (USP/Esalq)** and generalized into reusable working tools.
+> Part of the [Data-Science](https://github.com/PRBerlanda/Data-Science/tree/main) repository. Each branch holds one model.
 
 ---
 
-## 📂 How the repository is organized
+## What this model does
 
-Each model lives in **its own branch**. Switch branches with the selector at the top of the file list, or use the links below. Every branch contains:
+Text mining turns free text into numbers that can be counted and modeled:
 
-- the **Python script** (`.py`), fully in English;
-- an **example dataset**, so you can run it immediately;
-- a **README.md** user guide: what the model is, where it applies, the workflow, inputs, outputs and how to interpret the results;
-- a `requirements.txt`.
+- **Cleaning**: lowercase, remove links, numbers, punctuation and stopwords (very common words such as "the", "of"), and optionally reduce words to their stem.
+- **Frequencies and bigrams**: which words and two-word expressions appear most.
+- **Topics (LDA)**: Latent Dirichlet Allocation groups words that tend to appear together into topics. Each text gets a mix of topics and a dominant one.
+- **Classification**: TF-IDF turns each text into a vector that gives more weight to words that are frequent in the text but rare in the dataset. A Naive Bayes and a logistic regression are compared by cross-validation.
+- **Lexicon sentiment** (optional): VADER for English, or your own word → polarity list, with simple negation handling.
 
-| # | Branch | Technique | Use it to |
-|---|---|---|---|
-| 01 | [`01-Cluster-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/01-Cluster-Analysis) | Hierarchical clustering + k-means | Segment observations described by numeric variables |
-| 02 | [`02-PCA-Factor-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/02-PCA-Factor-Analysis) | Principal component factor analysis | Reduce many correlated variables into factors, build indices and rankings |
-| 03 | [`03-Correspondence-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/03-Correspondence-Analysis) | Simple (ANACOR) and multiple (MCA) correspondence analysis | Find associations between categorical variables on a perceptual map |
-| 04 | [`04-Linear-Regression`](https://github.com/PRBerlanda/Data-Science/tree/04-Linear-Regression) | OLS + stepwise + Box-Cox + diagnostics | Explain and predict a continuous target |
-| 05 | [`05-Binary-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/05-Binary-Logistic-Regression) | Binary logit | Estimate the probability of an event (2 classes) |
-| 06 | [`06-Multinomial-Logistic-Regression`](https://github.com/PRBerlanda/Data-Science/tree/06-Multinomial-Logistic-Regression) | Multinomial logit | Estimate probabilities of 3+ unordered classes |
-| 07 | [`07-Count-Data-Models`](https://github.com/PRBerlanda/Data-Science/tree/07-Count-Data-Models) | Poisson, Negative Binomial, ZIP, ZINB | Model counts (0, 1, 2, …) |
-| 08 | [`08-Multilevel-Modeling`](https://github.com/PRBerlanda/Data-Science/tree/08-Multilevel-Modeling) | Hierarchical linear models (HLM2 / HLM3) | Model data nested in groups or repeated measures |
-| 09 | [`09-Time-Series-Forecasting`](https://github.com/PRBerlanda/Data-Science/tree/09-Time-Series-Forecasting) | Benchmarks, ETS / Holt-Winters, SARIMA | Forecast a univariate time series |
-| 10 | [`10-Trees-and-Ensembles`](https://github.com/PRBerlanda/Data-Science/tree/10-Trees-and-Ensembles) | Decision tree, Random Forest, XGBoost, LightGBM + SHAP | Get the best prediction (class or value) and explain it |
-| 11 | [`11-Neural-Networks-Tabular`](https://github.com/PRBerlanda/Data-Science/tree/11-Neural-Networks-Tabular) | Multilayer perceptron (scikit-learn or Keras) | Predict with a neural network on tabular data |
-| 12 | [`12-LSTM-Time-Series`](https://github.com/PRBerlanda/Data-Science/tree/12-LSTM-Time-Series) | LSTM recurrent network | Forecast a series with a recurrent neural network |
-| 13 | [`13-Text-Mining-NLP`](https://github.com/PRBerlanda/Data-Science/tree/13-Text-Mining-NLP) | Frequencies, LDA topics, TF-IDF + Naive Bayes / logistic | Explore and classify texts, sentiment |
-| 14 | [`14-Web-Scraping`](https://github.com/PRBerlanda/Data-Science/tree/14-Web-Scraping) | requests + BeautifulSoup + read_html | Collect tables and items from web pages |
-| 15 | [`15-Linear-Programming`](https://github.com/PRBerlanda/Data-Science/tree/15-Linear-Programming) | Linear / integer programming (HiGHS) | Solve optimization problems from a spreadsheet (Solver replacement) |
-| 16 | [`16-Social-Network-Analysis`](https://github.com/PRBerlanda/Data-Science/tree/16-Social-Network-Analysis) | Centrality + community detection | Analyze relationship networks |
+Built-in stopword lists cover **Portuguese and English**, so the tool works offline.
 
----
+## When to use it
 
-## 🧭 Which tool should I use?
+- Understanding what customers or employees talk about (exploration only: no label needed).
+- Classifying texts automatically into known categories: sentiment, ticket subject, complaint type…
+- Turning star ratings into positive/negative labels to train a sentiment classifier.
 
-```
-Do you have a target variable (Y)?
-├─ No ─► numeric variables? ─ yes ─► 01 Cluster (groups) or 02 PCA (indices)
-│                           └ no ──► 03 Correspondence Analysis
-│        texts? ─► 13 · relationships between actors? ─► 16 · optimal decision? ─► 15
-│        need to collect data from the web first? ─► 14
-└─ Yes ─► Y over time (a series)? ─► 09 (classical) or 12 (LSTM)
-          continuous Y ─► 04 (explain) or 10 / 11 (predict)
-          binary Y ─► 05 (explain, odds ratios) or 10 / 11 (predict)
-          Y with 3+ classes ─► 06 or 10
-          count Y ─► 07
-          observations nested in groups ─► 08
-```
+**Limitations:** irony, slang and complex negations are hard for bag-of-words methods. For those cases, consider transformer-based language models.
 
-Rule of thumb: tools **04 to 08** focus on **explaining** (coefficients, tests, assumptions), and tools **10 to 12** focus on **predicting** (cross-validation, out-of-sample performance).
+## How it works
 
----
+1. **Load the texts** and drop empty ones. Optionally create a label from a rating: high ratings become *positive*, low ratings *negative*, and middle ratings are dropped.
+2. **Clean** each text according to the language and options.
+3. **Frequent words and bigrams**, bar chart and word cloud.
+4. **LDA topics**: the number of topics is chosen automatically (2 to 8) by a simple coherence score, or fixed. Each text receives its dominant topic.
+5. **Lexicon sentiment** (if configured): a polarity score and a positive/neutral/negative class per text.
+6. **Text classifier** (if there is a label): stratified train/test split, cross-validated comparison of Naive Bayes and logistic regression (macro F1), test evaluation, confusion matrix, most indicative terms per class, and the final model saved after refitting on all data.
+7. **Classify new texts** from a file, with a confidence score.
 
-## ⚙️ Common features
+## Inputs
 
-- Reads `.csv` (separator and encoding detected), `.xlsx/.xls`, `.parquet`, `.pkl` and `.json`.
-- Paths are relative to the script's folder, so data and script travel together.
-- Automatic dummies for categorical variables, fixed random seeds, no data leakage in the predictive pipelines.
-- Charts can be shown on screen or only saved (`SHOW_PLOTS = False` for batch runs).
-- Predictive tools can score a new file (`PREDICT_FILE`) and save the trained model.
+**Data:** one row per text. Optionally a label column or a rating column.
 
-## 🚀 Getting started
+**Configuration** (the `CONFIGURATION` cell):
+
+| Parameter | What it controls |
+|---|---|
+| `FILE`, `SHEET`, `SEPARATOR` | Input file, Excel sheet and CSV separator. |
+| `TEXT_COLUMN` | Column with the texts. |
+| `LABEL_COLUMN` | Column with the text class (`None` = exploration only). |
+| `LABEL_FROM_RATING` | Build the label from a rating, e.g. `{"column": "review_score", "positive_min": 4, "negative_max": 2}`. |
+| `LANGUAGE` | `"portuguese"` or `"english"` (stopwords and stemmer). |
+| `REMOVE_ACCENTS`, `EXTRA_STOPWORDS`, `STEMMING`, `MIN_WORD_LENGTH` | Cleaning options. |
+| `NGRAMS` | N-gram range used by the classifier, e.g. `(1, 2)` = words and bigrams. |
+| `TOP_N`, `WORD_CLOUD` | Number of top terms reported and the word cloud. |
+| `N_TOPICS` | Number of LDA topics, `"auto"` or 0 to turn off. |
+| `FOLDS`, `TEST_PROPORTION`, `SEED` | Classifier validation settings. |
+| `PREDICT_FILE` | New texts to classify (same text column). |
+| `SENTIMENT_LEXICON` | `None`, `"vader"` (English) or the path to a CSV with word and polarity columns. |
+
+## Outputs
+
+Saved in `results/`:
+
+| File | Content |
+|---|---|
+| `report.md` | Text statistics, cleaning example, top terms, topics, sentiment, classifier results and interpretation. |
+| `processed_texts.csv` | Original data plus clean text, dominant topic and sentiment (when computed). |
+| `frequent_words.csv`, `frequent_bigrams.csv` | Top words and expressions with their frequencies. |
+| `lda_topics.csv` | The ten keywords of each topic. |
+| `text_classifier.joblib` | Trained TF-IDF + classifier pipeline and its cleaning settings. |
+| `new_text_predictions.csv` | Predicted class and confidence for `PREDICT_FILE`. |
+| `01_frequent_words.png`, `02_word_cloud.png`, `03_confusion_matrix.png` | Charts. |
+
+## How to read the results
+
+- **Frequent words and bigrams** show the recurring themes. Bigrams often carry more meaning ("long wait", "friendly staff").
+- **Topics**: read the keywords of each topic and give it a name. The distribution of dominant topics shows which themes prevail.
+- **Lexicon sentiment**: a positive score means positive tone. This is a rough measure that misses irony and context.
+- **Classifier**: macro F1 balances all classes (1 = perfect). Trust the classifier only if the cross-validated F1 is stable (small standard deviation) and close to the test F1.
+- **Confusion matrix**: which classes the classifier mixes up.
+- **Indicative terms**: the words that pull most towards each class. If they make no sense, the classifier is learning noise or the labels need review.
+- **Confidence** of a new prediction: the highest class probability. Low values deserve a human review.
+
+## How to run
 
 ```bash
-git clone https://github.com/PRBerlanda/Data-Science.git
-cd Data-Science
-git checkout 04-Linear-Regression        # or any other branch
 pip install -r requirements.txt
-python linear_regression.py              # or open it in Spyder / VS Code
 ```
 
-TensorFlow is optional and only needed for tool 11 with `ENGINE = "keras"` and for tool 12 (LSTM).
+1. Put your data file next to `text_mining_nlp.py`.
+2. Edit the `CONFIGURATION` cell (at least `FILE`, `TEXT_COLUMN` and `LANGUAGE`).
+3. Run the script in Spyder (F5) or with `python text_mining_nlp.py`.
+4. Open `results/report.md`.
 
-## 🛠️ Tech stack
+`nltk` (stemming, VADER) and `wordcloud` are optional.
 
-Python · pandas · NumPy · SciPy · statsmodels · scikit-learn · XGBoost · LightGBM · SHAP · TensorFlow/Keras · factor_analyzer · prince · NetworkX · BeautifulSoup · Matplotlib · seaborn
+## Example dataset
 
-## 📬 About
+`depoimentos.csv` contains restaurant customer reviews written in Portuguese: an ID, a date (`data`) and the review text (`depoimento`). It has no label, so the default configuration runs the exploration part (frequencies, word cloud and topics).
 
-Paulo Berlanda, Data Analyst. See also my [Power BI portfolio](https://github.com/PRBerlanda/PowerBI).
+## Credits
+
+Built from the "text_mining_1/2/3_colab" notebooks, Classes 01–03 of the Text Mining module (MBA in Data Science and Analytics, USP/Esalq).
